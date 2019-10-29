@@ -61,7 +61,15 @@ class HashTable:
             self.storage[index] = node
             return
         else:
-            print('Collision')
+            if node.key == key:
+                node.value = value
+                return
+            while node.next is not None:
+                node = node.next
+                if node.key == key:
+                    node.value = value
+                    return
+            node.next = LinkedPair(key, value)
             return
 
     def remove(self, key):
@@ -75,12 +83,24 @@ class HashTable:
 
         index = self._hash_mod(key)
         node = self.storage[index]
-        if node is not None:
-            temp = node
-            node = None
-            return temp.value
-
-        print('Key is not found in hash table')
+        if node.key == key:
+            if node.next is not None:
+                next_node = node.next
+                node = next_node
+            else:
+                node = None
+        else:
+            prev_node = None
+            current_node = node
+            next_node = node.next
+            while next_node is not None:
+                prev_node = node
+                current_node = next_node
+                next_node = current_node.next
+                if current_node.key == key:
+                    prev_node.next = next_node
+                    return
+        print("Key is not found")
         return
 
     def retrieve(self, key):
@@ -94,7 +114,13 @@ class HashTable:
         index = self._hash_mod(key)
         node = self.storage[index]
         if node is not None:
-            return node.value
+            if node.key == key:
+                return node.value
+            else:
+                while node.next is not None:
+                    node = node.next
+                    if node.key == key:
+                        return node.value
         return None
 
     def resize(self):
@@ -104,7 +130,20 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        new_storage = [None] * self.capacity
+        # Copy old items to new storage
+        for i in range(0, len(self.storage)):
+            new_storage[i] = self.storage[i]
+        # Point storage to the new storage
+        self.storage = [None]*self.capacity*2
+        self.capacity *= 2
+        for i in new_storage:
+            if i is not None:
+                node = i
+                while node.next is not None:
+                    self.insert(node.key, node.value)
+                    node = node.next
+                self.insert(node.key, node.value)
 
 
 if __name__ == "__main__":
@@ -112,6 +151,7 @@ if __name__ == "__main__":
 
     ht.insert("line_1", "Tiny hash table")
     ht.insert("line_2", "Filled beyond capacity")
+    ht.insert("line_3", "Linked list saves the day!")
     ht.insert("line_3", "Linked list saves the day!")
 
     print("")
